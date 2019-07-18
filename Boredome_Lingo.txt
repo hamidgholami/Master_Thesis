@@ -1,0 +1,55 @@
+model:
+sets:
+operator/1 2/:wi,wit;  !i;
+job/1 2 3 4/;       !j;
+period/1 2 3 4 5/;      !r;
+periodfix/1 2 /:x,l,u;     !n;
+links0(operator):boredom;
+links1(operator,periodfix,job):Ainj;
+links11(operator,periodfix,job,job):Ainjj;
+links2(operator,period,job):Airj;
+links3(operator,periodfix):boredom1,Cin,op;
+
+links5(job,job):Pjk;
+endsets
+
+data:
+nj=4;
+Nb=2;
+RI=5;
+Cin=1 1 
+    1 0 ;
+Pjk=1 0.20 1 0.46
+    0.20 1 0.71 0.08
+    1 0.71 1 0.90
+    0.46 0.08 0.90 1;
+x=1 4 ;
+enddata
+
+!min=@sum(operator(i):boredom(i));
+min=@max(operator(i):boredom(i));
+w=@sum(operator(i):@sum(periodfix(n):cin(i,n)));
+@for(operator(i):wi(i)=@sum(periodfix(n):cin(i,n)));
+@for(operator(i):wit(i)=wi(i)/w);
+
+@for(links1(i,n,j):@bin(Ainj(i,n,j))); 
+@for(links2(i,r,j):@bin(Airj(i,r,j)));
+@for(periodfix(n):@gin(x(n)));
+@for(periodfix(n):x(n)>=1);
+@for(job(j):@for(period(r):@sum(operator(i):Airj(i,r,j))=1));
+@for(operator(i):@for(period(r):@sum(job(j):Airj(i,r,j))>=1));
+@sum(periodfix(n):x(n))=RI;
+@for(periodfix(n):l(n)=@sum(periodfix(m)|m#le#n-1:x(m))+1);
+@for(periodfix(n):u(n)=@sum(periodfix(m)|m#le#n:x(m)));
+@for(operator(i):@for(job(j):@for(periodfix(n):@sum(period(r)|r#ge#l(n)#and#r#le#u(n):Airj(i,r,j))=x(n)*Ainj(i,n,j))));
+!@for(operator(i):@for(job(j):@for(periodfix(n):@for(period(r)|r#ge#l(n)#and#r#le#u(n)-1:Airj(i,r,j)=Airj(i,r+1,j)))));
+@for(operator(i):@for(job(j):@for(periodfix(n)|n#le#Nb-1:Airj(i,u(n),j)*Airj(i,l(n+1),j)=0)));
+
+!@for(periodfix(n)|n#le#Nb-1:x(n)>=x(n+1));
+@for(operator(i):@for(periodfix(n):@for(job(j):@for(job(jj):Ainj(i,n,j)+Ainj(i,n,jj)<=1+2*Ainjj(i,n,j,jj)))));
+@for(operator(i):@for(periodfix(n):@for(job(j):@for(job(jj):Ainj(i,n,j)+Ainj(i,n,jj)>=2*Ainjj(i,n,j,jj)))));
+@for(operator(i):@for(periodfix(n):@for(job(j):@for(job(jj):@bin(Ainjj(i,n,j,jj))))));
+
+@for(periodfix(n):@for(operator(i):boredom1(i,n)=(1-cin(i,n))*((@sum(job(j):@sum(job(jj):Ainjj(i,n,j,jj)*Pjk(j,jj))))/@sum(job(j):@sum(job(jj):Ainjj(i,n,j,jj))))+cin(i,n)*(1-(@sum(job(j):@sum(job(jj):Ainjj(i,n,j,jj)*Pjk(j,jj)))/@sum(job(j):@sum(job(jj):Ainjj(i,n,j,jj)))))));
+@for(operator(i):@for(periodfix(n):boredom(i)>=boredom1(i,n)));
+
