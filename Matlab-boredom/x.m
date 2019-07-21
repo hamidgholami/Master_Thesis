@@ -1,11 +1,23 @@
-function x = x(n)
+function [a1 a2] = x(n)
 
-    n = 2;
-    m = 6;
-    a = rand(n,1);
-    x = round(a/sum(a)*m);
-    x(1) = x(1) - sum(x) + m;
+    while true
+        x=randi([1 6],1,2);
+        if(sum(x)==6)
+   break;
+        end
+    end
+    %disp(x)
+     x
+    %disp(sum(A))
+
 end
+
+%    n = 2;
+%    m = 6;
+ %   a = rand(n,1);
+ %   x = round(a/sum(a)*m);
+ %   x(1) = x(1) - sum(x) + m;
+%end
 
 
 
