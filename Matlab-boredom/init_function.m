@@ -70,33 +70,26 @@ disp('Best Solution is: ');disp([struct2table(BestSolution.Assigned)]);
 %struct2table(BestSolution.Assigned)
 
 %% Model Inputs
-    NumOp =8;
-    NumCell =6;
-    NumPeriod =4;
-    NumTask =5;
-    NumRot =5;
- Bs = [55	50	54	49]; %Bm In Modelling
+    opn =8;
+    ojn =6;
+    nump =4;
+    tsk =5;
+    nrt =5;
  EpsiOp = [0.18	0.19	0.2	0.21	0.2	0.2	0.2	0.22];
  %NooOp = [1	1	1	4	1	3	2	1];
  NooOp = BestSolution.Assigned.result;          
-%ProTime =[1 0.88 0.99 0.46 0.45;0.88 1 0.71 0.55 0.44;0.99 0.71 1 0.90 0.98;0.46 0.55 0.90 1 0.58;0.45 0.44 0.98 0.58 1];
-ProTime = pop(1).BoredomResults;
-
+ ProTime = pop(1).BoredomResults;
  cbar=1.8; 
- 
- f2=floor(NumPeriod/NumCell);
-
- 
+ f2=floor(nump/ojn);
  time=[];
  %% IWO Parameters
  nPop0=20;
  nPop =500;
- 
  MaxIt=100;
  Exponent=0.5;
  Smin = 1;       % Minimum Number of Seeds
  Smax = 20;       % Maximum Number of Seeds
- NumOpx=4;
+ opnx=4;
  %% Initialization
 empty_plant.AssignedOp= [];
 empty_plant.AssignmentXIWO = [];
@@ -104,62 +97,62 @@ empty_plant.AssignmentZIWO = [];
 empty_plant.AssignmentXMODEL = [];
 empty_plant.AssignmentZMODEL = [];
 empty_plant.Gijt = [];
-
 empty_plant.Flow = [];
+Bs = [55	50	54	49];
 pop = repmat(empty_plant, nPop0, 1);
 for i=1:numel(pop)
- w=randi([NumCell,NumCell],1);
- AssignedSet=randperm(NumOp,w);
- XIWO=zeros(NumRot,w);
- ZIWO=zeros(NumRot,NumPeriod);
-        for t=1:NumRot
+ w=randi([ojn,ojn],1);
+ AssignedSet=randperm(opn,w);
+ XIWO=zeros(nrt,w);
+ ZIWO=zeros(nrt,nump);
+        for t=1:nrt
      
-    f1=floor(w/NumCell);
+    f1=floor(w/ojn);
     for f=1:f1
-    XIWO(t,1+(f-1)*NumCell:f*NumCell)=randperm(NumCell);
+    XIWO(t,1+(f-1)*ojn:f*ojn)=randperm(ojn);
     end
-    XIWO(t,f1*NumCell+1:w)=randperm(NumCell,w-f1*NumCell);
+    XIWO(t,f1*ojn+1:w)=randperm(ojn,w-f1*ojn);
     for f=1:f2
-    ZIWO(t,1+(f-1)*NumCell:f*NumCell)=randperm(NumCell);
+    ZIWO(t,1+(f-1)*ojn:f*ojn)=randperm(ojn);
     end
-    ZIWO(t,f2*NumCell+1:NumPeriod)=randperm(NumCell,NumPeriod-f2*NumCell);
+    ZIWO(t,f2*ojn+1:nump)=randperm(ojn,nump-f2*ojn);
         end
     
  %XIWO TO XMODEL
-     XMODEL=zeros(NumOp,NumCell*NumRot);
+     XMODEL=zeros(opn,ojn*nrt);
     for ii=1:w
-        for j=1:NumCell
-            for t=1:NumRot
+        for j=1:ojn
+            for t=1:nrt
                 if XIWO(t,ii)==j
-                    XMODEL(AssignedSet(ii),(j-1)*NumRot+t)=1;
+                    XMODEL(AssignedSet(ii),(j-1)*nrt+t)=1;
                 end
             end
         end
  
     end
   %ZIWO TO ZMODEL
-    ZMODEL=zeros(NumPeriod,NumCell*NumRot);
-        for j=1:NumCell
-            for t=1:NumRot
-                for m=1:NumPeriod
+    ZMODEL=zeros(nump,ojn*nrt);
+        for j=1:ojn
+            for t=1:nrt
+                for m=1:nump
                     if ZIWO(t,m)==j
-                        ZMODEL(m,(j-1)*NumRot+t)=1;
+                        ZMODEL(m,(j-1)*nrt+t)=1;
                     end
                 end
             end
         end
         
    % Gijt Calculation
-      Gijt=zeros(NumOp,NumCell*NumRot);
-     % Wjt=zeros(1,NumCell*NumRot);
+      Gijt=zeros(opn,ojn*nrt);
+     % Wjt=zeros(1,ojn*nrt);
       Wjt=sum(XMODEL,1);
     for ii=1:w
-        for j=1:NumCell
-            for t=1:NumRot
-                if Wjt((j-1)*NumRot+t)>NooOp(AssignedSet(ii))
-                    Gijt(AssignedSet(ii),(j-1)*NumRot+t)=1+EpsiOp(AssignedSet(ii))*(Wjt((j-1)*NumRot+t)-NooOp(AssignedSet(ii)));
+        for j=1:ojn
+            for t=1:nrt
+                if Wjt((j-1)*nrt+t)>NooOp(AssignedSet(ii))
+                    Gijt(AssignedSet(ii),(j-1)*nrt+t)=1+EpsiOp(AssignedSet(ii))*(Wjt((j-1)*nrt+t)-NooOp(AssignedSet(ii)));
                 else
-                    Gijt(AssignedSet(ii),(j-1)*NumRot+t)=1;
+                    Gijt(AssignedSet(ii),(j-1)*nrt+t)=1;
                 end
             end
         end
@@ -167,24 +160,24 @@ for i=1:numel(pop)
     end   
     
     %Flow calculations
-    a1=zeros(NumPeriod,1);
-    a2=zeros(NumPeriod,1);
-    TCm=zeros(NumPeriod,1);
-    FCm=zeros(NumPeriod,1);
+    a1=zeros(nump,1);
+    a2=zeros(nump,1);
+    TCm=zeros(nump,1);
+    FCm=zeros(nump,1);
     for ii=1:w
-        for j=1:NumCell
-            for t=1:NumRot
-                for m=1:NumPeriod
-                   a1(m)=a1(m)+ Gijt(AssignedSet(ii),(j-1)*NumRot+t)*XMODEL(AssignedSet(ii),(j-1)*NumRot+t)*ZMODEL(m,(j-1)*NumRot+t);%*B_BatchOp(AssignedSet(ii),m);
-                   a2(m)=a2(m)+XMODEL(AssignedSet(ii),(j-1)*NumRot+t)*ZMODEL(m,(j-1)*NumRot+t);
+        for j=1:ojn
+            for t=1:nrt
+                for m=1:nump
+                   a1(m)=a1(m)+ Gijt(AssignedSet(ii),(j-1)*nrt+t)*XMODEL(AssignedSet(ii),(j-1)*nrt+t)*ZMODEL(m,(j-1)*nrt+t);
+                   a2(m)=a2(m)+XMODEL(AssignedSet(ii),(j-1)*nrt+t)*ZMODEL(m,(j-1)*nrt+t);
                 end
             end
         end
  
     end 
-    for m=1:NumPeriod
+    for m=1:nump
         TCm(m)=a1(m)*cbar/a2(m);
-        FCm(m)=TCm(m)*w*NumRot*Bs(m)/a2(m);
+        FCm(m)=TCm(m)*w*nrt*Bs(m)/a2(m);
     end
    Flow=max(FCm);
  pop(i).AssignedOp=AssignedSet;
@@ -204,8 +197,8 @@ end
 for it=1:MaxIt
     
     % Update Standard Deviation
-    sigma = floor(((MaxIt - it)/(MaxIt - 1))^Exponent * (NumRot - 1) + 1);
-    sigma2 = floor(((MaxIt - it)/(MaxIt - 1))^Exponent * (NumOpx - 1) + 1);    
+    sigma = floor(((MaxIt - it)/(MaxIt - 1))^Exponent * (nrt - 1) + 1);
+    sigma2 = floor(((MaxIt - it)/(MaxIt - 1))^Exponent * (opnx - 1) + 1);    
     % Get Best and Worst Flow Values
     Flows = [pop.Flow];
     BestFlow = min(Flows);
@@ -229,28 +222,28 @@ for it=1:MaxIt
             % Generate Random Location
             rrr=rand;
            if rrr>((MaxIt - it)/(MaxIt - 1))^Exponent 
-            newsol.AssignmentXIWO = pop(i).AssignmentXIWO + repmat(randi(NumCell-1,[NumRot ,1]),1,size(pop(i).AssignmentXIWO,2));
-            newsol.AssignmentZIWO = pop(i).AssignmentZIWO + repmat(randi(NumCell-1,[NumRot ,1]),1,size(pop(i).AssignmentZIWO,2));
-            for r=1:NumRot-sigma
-                temp=randi(NumRot);
+            newsol.AssignmentXIWO = pop(i).AssignmentXIWO + repmat(randi(ojn-1,[nrt ,1]),1,size(pop(i).AssignmentXIWO,2));
+            newsol.AssignmentZIWO = pop(i).AssignmentZIWO + repmat(randi(ojn-1,[nrt ,1]),1,size(pop(i).AssignmentZIWO,2));
+            for r=1:nrt-sigma
+                temp=randi(nrt);
                 newsol.AssignmentXIWO(temp,:)=pop(i).AssignmentXIWO(temp,:);
              
             end
-            for r=1:NumRot-sigma
-                temp=randi(NumRot);
+            for r=1:nrt-sigma
+                temp=randi(nrt);
                 newsol.AssignmentZIWO(temp,:)=pop(i).AssignmentZIWO(temp,:);
              
             end            
             
-            for r=1:NumRot
+            for r=1:nrt
                for ii=1:size(pop(i).AssignmentXIWO,2)
-                  if newsol.AssignmentXIWO(r,ii)>NumCell
-                      newsol.AssignmentXIWO(r,ii)=newsol.AssignmentXIWO(r,ii)-NumCell;
+                  if newsol.AssignmentXIWO(r,ii)>ojn
+                      newsol.AssignmentXIWO(r,ii)=newsol.AssignmentXIWO(r,ii)-ojn;
                   end
                end
                 for ii=1:size(pop(i).AssignmentZIWO,2)
-                  if newsol.AssignmentZIWO(r,ii)>NumCell
-                      newsol.AssignmentZIWO(r,ii)=newsol.AssignmentZIWO(r,ii)-NumCell;
+                  if newsol.AssignmentZIWO(r,ii)>ojn
+                      newsol.AssignmentZIWO(r,ii)=newsol.AssignmentZIWO(r,ii)-ojn;
                   end
                 end              
             end
@@ -259,18 +252,18 @@ for it=1:MaxIt
                if rrr>0.85*((MaxIt - it)/(MaxIt - 1))^Exponent 
             newsol.AssignmentXIWO = pop(i).AssignmentXIWO ;
             newsol.AssignmentZIWO = pop(i).AssignmentZIWO ;
-            newsol.AssignedOp = pop(i).AssignedOp+randi(NumOp,1);
+            newsol.AssignedOp = pop(i).AssignedOp+randi(opn,1);
             for iii=1:size(pop(i).AssignedOp,2)
-                if newsol.AssignedOp(1,iii)>NumOp
-                    newsol.AssignedOp(1,iii)=newsol.AssignedOp(1,iii)-NumOp;
+                if newsol.AssignedOp(1,iii)>opn
+                    newsol.AssignedOp(1,iii)=newsol.AssignedOp(1,iii)-opn;
                 end
             end
                else
-           if size(pop(i).AssignedOp,2)<NumOp
-           newsol.AssignmentXIWO=myCol(pop(i).AssignmentXIWO,randi(NumCell,[NumRot,1]));
+           if size(pop(i).AssignedOp,2)<opn
+           newsol.AssignmentXIWO=myCol(pop(i).AssignmentXIWO,randi(ojn,[nrt,1]));
            NonAssigned=[];
            gg=0;
-           for iiii=1:NumOp
+           for iiii=1:opn
                if ismember(iiii,pop(i).AssignedOp)==0
                    %myCol(iiii,NonAssigned);
                    gg=gg+1;
@@ -287,24 +280,24 @@ for it=1:MaxIt
                end
            end
  %-----------------------------------------------------------------------------------------------------
-  newsol.AssignmentXMODEL=zeros(NumOp,NumRot*NumCell);
+  newsol.AssignmentXMODEL=zeros(opn,nrt*ojn);
      for ii=1:w
-        for j1=1:NumCell
-            for t=1:NumRot
+        for j1=1:ojn
+            for t=1:nrt
                 if newsol.AssignmentXIWO(t,ii)==j1
-                    newsol.AssignmentXMODEL(pop(i).AssignedOp(ii),(j1-1)*NumRot+t)=1;
+                    newsol.AssignmentXMODEL(pop(i).AssignedOp(ii),(j1-1)*nrt+t)=1;
                 end
             end
         end
  
     end
   
-  newsol.AssignmentZMODEL=zeros(NumPeriod,NumRot*NumCell);
-         for j1=1:NumCell
-            for t=1:NumRot
-                for m=1:NumPeriod
+  newsol.AssignmentZMODEL=zeros(nump,nrt*ojn);
+         for j1=1:ojn
+            for t=1:nrt
+                for m=1:nump
                     if newsol.AssignmentZIWO(t,m)==j1
-                        newsol.AssignmentZMODEL(m,(j1-1)*NumRot+t)=1;
+                        newsol.AssignmentZMODEL(m,(j1-1)*nrt+t)=1;
                     end
                 end
             end
@@ -312,12 +305,12 @@ for it=1:MaxIt
         
       Wjt=sum(pop(i).AssignmentXMODEL,1);
     for ii=1:w
-        for j1=1:NumCell
-            for t=1:NumRot
-                if Wjt((j1-1)*NumRot+t)>NooOp(pop(i).AssignedOp(ii))
-                    newsol.Gijt(pop(i).AssignedOp(ii),(j1-1)*NumRot+t)=1+EpsiOp(pop(i).AssignedOp(ii))*(Wjt((j1-1)*NumRot+t)-NooOp(pop(i).AssignedOp(ii)));
+        for j1=1:ojn
+            for t=1:nrt
+                if Wjt((j1-1)*nrt+t)>NooOp(pop(i).AssignedOp(ii))
+                    newsol.Gijt(pop(i).AssignedOp(ii),(j1-1)*nrt+t)=1+EpsiOp(pop(i).AssignedOp(ii))*(Wjt((j1-1)*nrt+t)-NooOp(pop(i).AssignedOp(ii)));
                 else
-                    newsol.Gijt(pop(i).AssignedOp(ii),(j1-1)*NumRot+t)=1;
+                    newsol.Gijt(pop(i).AssignedOp(ii),(j1-1)*nrt+t)=1;
                 end
             end
         end
@@ -327,24 +320,24 @@ for it=1:MaxIt
  %-----------------------------------------------------------------------------------------------------
             % Evaluate Offsring
             % newsol.Flow = ?
-    a1=zeros(NumPeriod,1);
-    a2=zeros(NumPeriod,1);
-    TCm=zeros(NumPeriod,1);
-    FCm=zeros(NumPeriod,1);
+    a1=zeros(nump,1);
+    a2=zeros(nump,1);
+    TCm=zeros(nump,1);
+    FCm=zeros(nump,1);
     for ii=1:w
-        for j1=1:NumCell
-            for t=1:NumRot
-                for m=1:NumPeriod
-                   a1(m)=a1(m)+ newsol.Gijt(pop(i).AssignedOp(ii),(j1-1)*NumRot+t)*newsol.AssignmentXMODEL(pop(i).AssignedOp(ii),(j1-1)*NumRot+t)*newsol.AssignmentZMODEL(m,(j1-1)*NumRot+t);%*B_BatchOp(pop(i).AssignedOp(ii),m);
-                   a2(m)=a2(m)+newsol.AssignmentXMODEL(pop(i).AssignedOp(ii),(j1-1)*NumRot+t)*newsol.AssignmentZMODEL(m,(j1-1)*NumRot+t);
+        for j1=1:ojn
+            for t=1:nrt
+                for m=1:nump
+                   a1(m)=a1(m)+ newsol.Gijt(pop(i).AssignedOp(ii),(j1-1)*nrt+t)*newsol.AssignmentXMODEL(pop(i).AssignedOp(ii),(j1-1)*nrt+t)*newsol.AssignmentZMODEL(m,(j1-1)*nrt+t);
+                   a2(m)=a2(m)+newsol.AssignmentXMODEL(pop(i).AssignedOp(ii),(j1-1)*nrt+t)*newsol.AssignmentZMODEL(m,(j1-1)*nrt+t);
                 end
             end
         end
  
     end 
-    for m=1:NumPeriod
+    for m=1:nump
         TCm(m)=a1(m)*cbar/a2(m);
-        FCm(m)=TCm(m)*w*NumRot*Bs(m)/a2(m);
+        FCm(m)=TCm(m)*w*nrt*Bs(m)/a2(m);
     end
    Flow=max(FCm);    
 
@@ -373,7 +366,7 @@ for it=1:MaxIt
     BestSol = pop(1);
     
     % Store Best Cost History
-    BestFlows(it) = (BestSol.Flow/150)-2;
+    BestFlows(it) = (BestSol.Flow-365);
     time(it) =etime(clock,t0);
     
        
@@ -384,12 +377,12 @@ end
 figure;
 plot(BestFlows,'LineWidth',2);
  xlabel('Iteration');
- ylabel('Best Flow');
+ ylabel('Best Solution');
 
 figure;
 plot(time,BestFlows,'LineWidth',2);
 xlabel('Computation time(Sec)');
-ylabel('Best Flow');
+ylabel('Best Solution');
 
 
 %ga;
