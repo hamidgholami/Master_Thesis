@@ -1,10 +1,22 @@
+clear all
+close all
+clc
+
 %IWO for Seru
 %Model Inputs
-    NumOp =8;
+    NumOp =10;
     NumCell =6;
     NumBatch =4;
     NumTask =5;
     NumRot =5;
+    %-----------------
+%     NumOp =8;
+%     NumCell =6;
+%     NumBatch =4;
+%     NumTask =5;
+%     NumRot =5;
+    %---------------
+    
  Bs = [55	50	54	49]; %Bm In Modelling
  EpsiOp = [0.18	0.19	0.2	0.21	0.2	0.2	0.2	0.22];
  NooOp = [1	1	1	4	1	3	2	1];
