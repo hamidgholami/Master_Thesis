@@ -2,9 +2,9 @@ clear all
 close all
 clc
 
-%IWO for Seru
+%%IWO for Seru
 %Model Inputs
-    NumOp =10;
+    NumOp =8;
     NumCell =6;
     NumBatch =4;
     NumTask =5;
@@ -366,6 +366,6 @@ figure;
 %xlabel('Iteration');
 %ylabel('Best Flow');
 
-plot(time,BestFlows);
+plot(time,BestFlows,'LineWidth',2);
 xlabel('Computation time(Sec)');
 ylabel('Best Flow');
